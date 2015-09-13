@@ -65,7 +65,8 @@ plot1()
 # summary(subdate_hh_power$Global_active_power)
 
 plot2 <- function(){
-  ggplot(subdate_hh_power, aes(x = timestamp, y = Global_active_power)) + 
+  ggplot(subdate_hh_power, aes(x = timestamp, y = Global_active_power)) +
+  ggtitle("Plot 2\n") + 
   geom_line() +
   xlab("") +
   ylab("Global Active Power (kilowatts)") +
@@ -74,8 +75,7 @@ plot2 <- function(){
           axis.text.y = element_text(angle = 90, hjust = 1),
           axis.line = element_line(colour = "black"),
           panel.grid.minor = element_blank(),
-          panel.background = element_blank()) +
-  ggtitle("Plot 2\n")
+          panel.background = element_blank())
   dev.copy(png, file="plot2.png", width=480, height=480)
   dev.off()
   cat("Plot2.png has been saved in", getwd())
