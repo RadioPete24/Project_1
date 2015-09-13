@@ -1,0 +1,174 @@
+---
+title: "Project_1"
+author: "Peter Ching-Tze Ip"
+date: "September 12, 2015"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+require(ggplot2)
+require(dplyr)
+require(knitr)
+require(scales)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+#Reading in data file
+hh_power <- read.csv("~/Documents/JH_Courses/JH_Data/household_power_consumption.txt", sep=";")
+View(hh_power)
+
+#Reformatting Data
+hh_power <- transform(hh_power, 
+                      timestamp=as.POSIXct(paste(Date, Time), 
+                      format = "%d/%m/%Y %H:%M:%S")
+                      )
+hh_power$Date <- as.Date(hh_power$Date, format = "%d/%m/%Y")
+hh_power$Global_active_power <- as.numeric(as.character(hh_power$Global_active_power))
+hh_power$Global_reactive_power <- as.numeric(as.character(hh_power$Global_reactive_power))
+hh_power$Voltage <- as.numeric(as.character(hh_power$Voltage))
+
+hh_power$Sub_metering_1 <- as.numeric(as.character(hh_power$Sub_metering_1))
+hh_power$Sub_metering_2 <- as.numeric(as.character(hh_power$Sub_metering_2))
+hh_power$Sub_metering_3 <- as.numeric(as.character(hh_power$Sub_metering_3))
+# strptime(hh_power$Date, format = "%y/%m/%d")
+
+#Handling missing data with ?
+
+#Creating subset of data from 2007-02-01 to 2007-2-02 and changing data formats
+subdate_hh_power <- hh_power[(hh_power$Date=="2007-02-01") | (hh_power$Date=="2007-02-02"),]
+row.names(subdate_hh_power) <- NULL
+
+#Plotting and summarizing the data (Plot 1)
+# 
+# ggplot(subdate_hh_power, aes(x=CXR_freq), color = "red") + geom_histogram(binwidth = 0.1, aes(fill = ..count..)) + 
+# qplot(Global_active_power, data = subdate_hh_power, geom = "histogram", binwidth = 7)
+
+plot1() <- function(){ 
+    ggplot(subdate_hh_power, aes(x = subdate_hh_power$Global_active_power)) + 
+    geom_histogram(binwidth = 0.5, col = "black", fill = "red") +
+    xlab("Global Active Power (kilowatts)") + #Can also be placed in the scale command
+    ylab("Frequency (count)") + #Can also be placed in the scale command
+    geom_rug() + #Placing the rug described in lecture
+    scale_x_continuous(limits=c(0, 6)) + #Setting the limits of the x-axis
+    scale_y_continuous(breaks = seq(0, 1200, 200)) + #Setting the limits of the y-axis, and spacing
+    ggtitle("Plot 1\nGlobal Active Power") +
+    theme(plot.title = element_text(face = "bold", size = rel(2), hjust = 0), 
+          axis.text.y = element_text(angle = 90, hjust = 1)
+  dev.copy(png, file="plot1.png", width=480, height=480)
+  dev.off()
+  cat("Plot1.png has been saved in", getwd())
+  }
+plot1()
+
+# summary(subdate_hh_power$Global_active_power)
+
+plot2() <- function(){
+  ggplot(subdate_hh_power, aes(x = timestamp, y = Global_active_power)) + 
+  geom_line() +
+  xlab("") +
+  ylab("Global Active Power (kilowatts)") +
+  scale_x_datetime(breaks = date_breaks(width = "day"), labels = date_format("%a")) +
+  theme(plot.title = element_text(face = "bold", size = rel(2), hjust = 0),
+          axis.line = element_line(colour = "black"),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank()) +
+  ggtitle("Plot 2\n")
+  dev.copy(png, file="plot2.png", width=480, height=480)
+  dev.off()
+  cat("Plot2.png has been saved in", getwd())
+}
+plot2()
+
+plot3 <- function() {
+        ggplot(subdate_hh_power, aes(x=timestamp)) +
+          ggtitle("Plot 3\n") +
+          geom_line(aes(y=Sub_metering_1, colour = "Sub_metering_1")) +
+          geom_line(aes(y=Sub_metering_2, colour = "Sub_metering_2")) +
+          geom_line(aes(y=Sub_metering_3, colour = "Sub_metering_3")) +
+          xlab("") +
+          ylab("Energy sub metering") +
+          scale_x_datetime(breaks = date_breaks(width = "day"), labels = date_format("%a")) +
+          theme(plot.title = element_text(size = 20, hjust = 0), 
+                legend.title = element_blank(), 
+                legend.position = c(0.85, 0.85),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.line = element_line(colour = "black"),
+                panel.background = element_blank()) +     
+          scale_colour_manual(values = c("Sub_metering_1" = "black", "Sub_metering_2" = "red", "Sub_metering_3" = "blue"))
+        dev.copy(png, file="plot3.png", width=480, height=480)
+        dev.off()
+        cat("plot3.png has been saved in", getwd())
+}
+plot3()
+
+#Coding for plot4
+  #plot1
+p1 <- ggplot(subdate_hh_power, aes(x = timestamp, y = Global_active_power)) + 
+    geom_line() +  
+    xlab("") +
+    ylab("Global Active Power (kilowatts)") +
+    scale_x_datetime(breaks = date_breaks(width = "day"), labels = date_format("%a")) +
+    theme(plot.title = element_text(face = "bold", size = rel(2), hjust = 0),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(colour = "black"),
+          panel.background = element_blank())
+  
+  #plot2
+p2 <-  ggplot(subdate_hh_power, aes(timestamp, Voltage)) +
+    geom_line() +
+    xlab("datetime") +
+    ylab("Voltage") +
+    scale_x_datetime(breaks = date_breaks(width = "day"), labels = date_format("%a")) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(colour = "black"),
+          panel.background = element_blank())
+  
+    #plot3
+p3 <- ggplot(subdate_hh_power, aes(x=timestamp)) +
+          geom_line(aes(y=Sub_metering_1, colour = "Sub_metering_1")) +
+          geom_line(aes(y=Sub_metering_2, colour = "Sub_metering_2")) +
+          geom_line(aes(y=Sub_metering_3, colour = "Sub_metering_3")) +
+          xlab("") +
+          ylab("Energy sub metering") +
+          scale_x_datetime(breaks = date_breaks(width = "day"), labels = date_format("%a")) +
+          theme(plot.title = element_text(size = 20, hjust = 0), 
+                legend.title = element_blank(), 
+                legend.position = c(0.85, 0.85),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.line = element_line(colour = "black"),
+                panel.background = element_blank()) +     
+          scale_colour_manual(values = c("Sub_metering_1" = "black", "Sub_metering_2" = "blue", "Sub_metering_3" = "red"))
+    #plot4
+  
+p4 <- ggplot(subdate_hh_power, aes(timestamp, Global_reactive_power)) +
+    geom_line() +
+    xlab("datetime") +
+    ylab("Global_reactive_power") +
+    scale_x_datetime(breaks = date_breaks(width = "day"), labels = date_format("%a")) +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(colour = "black"),
+          panel.background = element_blank())
+
+plot4 <- function() {
+      multiplot(p1, p2, p3, p4, cols=2)
+      dev.copy(png, file="plot4.png", width=480, height=480)
+      dev.off()
+      cat("plot4.png has been saved in", getwd())
+}
+plot4()
+options(SweaveHooks = list(fig = function() par(mfrow=c(2,2))))
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
